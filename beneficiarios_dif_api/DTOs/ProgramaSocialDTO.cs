@@ -8,5 +8,6 @@
         public string Color { get; set; }
         public bool Estatus { get; set; }
         public int AreaAdscripcionId { get; set; }
+        public string Acronimo { get; set; }
     }
 }

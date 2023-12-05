@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\beneficiarios_dif_api.props" />
+</Project>
