@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\buildMultiTargeting\beneficiarios_dif_api.props" />
-</Project>
