@@ -15,5 +15,6 @@ namespace beneficiarios_dif_api
         public DbSet<ProgramaSocial> ProgramasSociales { get; set; }
         public DbSet<Rol> Rols { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
+
     }
 }
