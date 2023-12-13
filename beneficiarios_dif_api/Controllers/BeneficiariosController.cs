@@ -18,10 +18,44 @@ namespace beneficiarios_dif_api.Controllers
         }
 
         [HttpGet("obtener-todos")]
-        public async Task<ActionResult<List<Beneficiario>>> GetBeneficiarios()
+        public async Task<ActionResult<List<BeneficiarioDTO>>> GetBeneficiarios()
         {
-            return await context.Beneficiarios.ToListAsync();
+            try
+            {
+                var beneficiarios = await context.Beneficiarios.ToListAsync();
+                var beneficiariosDTO = beneficiarios.Select(b =>
+                    new BeneficiarioDTO
+                    {
+                        Id = b.Id,
+                        Nombres = b.Nombres,
+                        ApellidoPaterno = b.ApellidoPaterno,
+                        ApellidoMaterno = b.ApellidoMaterno,
+                        FechaNacimiento = b.FechaNacimiento,
+                        Domicilio = b.Domicilio,
+                        Sexo = b.Sexo,
+                        CURP = b.CURP,
+                        Latitud = b.Latitud,
+                        Longitud = b.Longitud,
+                        Estatus = b.Estatus,
+                        MunicipioId = b.MunicipioId,
+                        ProgramaSocialId = b.ProgramaSocialId,
+                    }).ToList();
+
+                // Calcular el nombre completo antes de enviar el DTO
+                foreach (var beneficiario in beneficiariosDTO)
+                {
+                    var tipo = beneficiario.GetType();
+                    tipo.GetProperty("NombreCompleto").SetValue(beneficiario, $"{beneficiario.Nombres} {beneficiario.ApellidoPaterno} {beneficiario.ApellidoMaterno}");
+                }
+
+                return beneficiariosDTO;
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error al obtener beneficiarios: {ex.Message}");
+            }
         }
+
 
         [HttpPost("crear")]
         public async Task<ActionResult> Create(BeneficiarioDTO dto)
