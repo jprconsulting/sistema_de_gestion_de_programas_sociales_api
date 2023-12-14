@@ -31,6 +31,7 @@ namespace beneficiarios_dif_api.Controllers
                         ApellidoPaterno = b.ApellidoPaterno,
                         ApellidoMaterno = b.ApellidoMaterno,
                         FechaNacimiento = b.FechaNacimiento,
+                        NombreCompleto2 = $"{b.Nombres} {b.ApellidoPaterno} {b.ApellidoMaterno}",
                         Domicilio = b.Domicilio,
                         Sexo = b.Sexo,
                         CURP = b.CURP,
