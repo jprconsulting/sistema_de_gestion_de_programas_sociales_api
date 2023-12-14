@@ -21,12 +21,27 @@ namespace beneficiarios_dif_api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<MunicipioDTO>>> GetMunicipios()
+        public async Task<ActionResult<List<MunicipioDTO>>> GetMunicipiosConBeneficiarios()
         {
+            try
+            {
+                var municipios = await context.Municipios.Include(m => m.Beneficiarios).ToListAsync();
 
-            var municipios = await context.Municipios.ToListAsync();
-            return mapper.Map<List<MunicipioDTO>>(municipios);
+                var municipiosDTO = municipios.Select(m =>
+                    new MunicipioDTO
+                    {
+                        Id = m.Id,
+                        Nombre = m.Nombre,
+                        TotalBeneficiarios = m.Beneficiarios.Count 
+                    }).ToList();
+
+                return municipiosDTO;
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error al obtener municipios con beneficiarios: {ex.Message}");
+            }
         }
-        
     }
 }
+
