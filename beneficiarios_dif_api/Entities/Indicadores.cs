@@ -1,8 +1,11 @@
-﻿namespace beneficiarios_dif_api.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace beneficiarios_dif_api.Entities
 {
     public class Indicadores
     {
-        public int IndicadorId { get; set; }
+        [Key]
+        public int? IndicadorId { get; set; }
         public int RangoInicial { get; set; }
         public int RangoFinal { get; set; }
         public string Descripcion { get; set; }

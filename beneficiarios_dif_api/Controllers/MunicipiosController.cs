@@ -21,27 +21,38 @@ namespace beneficiarios_dif_api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<MunicipioDTO>>> GetMunicipiosConBeneficiarios()
+        public async Task<ActionResult<List<MunicipioDTO>>> GetMunicipiosConBeneficiariosYColores()
         {
             try
             {
                 var municipios = await context.Municipios.Include(m => m.Beneficiarios).ToListAsync();
+                var indicadores = await context.Indicadores.ToListAsync();
 
                 var municipiosDTO = municipios.Select(m =>
-                    new MunicipioDTO
+                {
+                    var totalBeneficiarios = m.Beneficiarios.Count;
+                    var indicador = indicadores.FirstOrDefault(i => totalBeneficiarios >= i.RangoInicial && totalBeneficiarios <= i.RangoFinal);
+                    var color = indicador != null ? indicador.Color : "#FFFFFF"; 
+                    var descripcionIndicador = indicador != null ? indicador.Descripcion : "Sin descripción"; 
+
+                    return new MunicipioDTO
                     {
                         Id = m.Id,
                         Nombre = m.Nombre,
-                        TotalBeneficiarios = m.Beneficiarios.Count 
-                    }).ToList();
+                        TotalBeneficiarios = totalBeneficiarios,
+                        Color = color,
+                        DescripcionIndicador = descripcionIndicador
+                    };
+                }).ToList();
 
                 return municipiosDTO;
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Error al obtener municipios con beneficiarios: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error al obtener municipios con beneficiarios y colores: {ex.Message}");
             }
         }
+
     }
 }
 

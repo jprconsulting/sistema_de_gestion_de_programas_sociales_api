@@ -24,6 +24,10 @@ namespace beneficiarios_dif_api.Utilities
             CreateMap<RolDTO, Rol>();
 
             CreateMap<Municipio, MunicipioDTO>();
+
+            CreateMap<Indicadores, IndicadoresDTO>();
+            CreateMap<IndicadoresDTO, Indicadores>();
+
         }
     }
 }
