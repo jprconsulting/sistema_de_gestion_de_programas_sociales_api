@@ -15,6 +15,7 @@
         public bool Estatus { get; set; }
         public int MunicipioId { get; set; }
         public int ProgramaSocialId { get; set; }
+        public string NombreCompleto2 { get; set; }
 
         private string _nombreCompleto;
         public string NombreCompleto
