@@ -11,8 +11,8 @@ using beneficiarios_dif_api;
 namespace beneficiariosdifapi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20231214225317_Indicadores")]
-    partial class Indicadores
+    [Migration("20231215055721_IndicadoresPorMunicipio")]
+    partial class IndicadoresPorMunicipio
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -91,9 +91,9 @@ namespace beneficiariosdifapi.Migrations
                     b.ToTable("Beneficiarios");
                 });
 
-            modelBuilder.Entity("beneficiarios_dif_api.Entities.Indicadores", b =>
+            modelBuilder.Entity("beneficiarios_dif_api.Entities.Indicador", b =>
                 {
-                    b.Property<int?>("IndicadorId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
@@ -109,7 +109,7 @@ namespace beneficiariosdifapi.Migrations
                     b.Property<int>("RangoInicial")
                         .HasColumnType("int");
 
-                    b.HasKey("IndicadorId");
+                    b.HasKey("Id");
 
                     b.ToTable("Indicadores");
                 });

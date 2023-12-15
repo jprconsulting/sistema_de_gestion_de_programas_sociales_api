@@ -1,11 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace beneficiarios_dif_api.Entities
+﻿namespace beneficiarios_dif_api.DTOs
 {
-    public class Indicadores
+    public class IndicadorDTO
     {
-        [Key]
-        public int? IndicadorId { get; set; }
+        public int Id { get; set; }
         public int RangoInicial { get; set; }
         public int RangoFinal { get; set; }
         public string Descripcion { get; set; }

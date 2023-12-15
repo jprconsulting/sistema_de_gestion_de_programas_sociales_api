@@ -23,8 +23,8 @@ namespace beneficiarios_dif_api.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("obtener/{id:int}")]
-        public async Task<ActionResult<IndicadoresDTO>> GetById(int id)
+        [HttpGet("obtener-por-id/{id:int}")]
+        public async Task<ActionResult<IndicadorDTO>> GetById(int id)
         {
             var indicador = await _context.Indicadores.FindAsync(id);
 
@@ -33,20 +33,20 @@ namespace beneficiarios_dif_api.Controllers
                 return NotFound();
             }
 
-            return _mapper.Map<IndicadoresDTO>(indicador);
+            return _mapper.Map<IndicadorDTO>(indicador);
         }
 
         [HttpGet("obtener-todos")]
-        public async Task<ActionResult<List<IndicadoresDTO>>> GetIndicadores()
+        public async Task<ActionResult<List<IndicadorDTO>>> GetIndicadores()
         {
             var indicadores = await _context.Indicadores.ToListAsync();
-            return _mapper.Map<List<IndicadoresDTO>>(indicadores);
+            return _mapper.Map<List<IndicadorDTO>>(indicadores);
         }
 
         [HttpPost("crear")]
-        public async Task<ActionResult> Post(IndicadoresDTO dto)
+        public async Task<ActionResult> Post(IndicadorDTO dto)
         {
-            var indicador = _mapper.Map<Indicadores>(dto);
+            var indicador = _mapper.Map<Indicador>(dto);
 
             _context.Indicadores.Add(indicador);
             await _context.SaveChangesAsync();
@@ -70,9 +70,9 @@ namespace beneficiarios_dif_api.Controllers
         }
 
         [HttpPut("actualizar/{id:int}")]
-        public async Task<ActionResult> Edit(int id, [FromBody] IndicadoresDTO dto)
+        public async Task<ActionResult> Edit(int id, [FromBody] IndicadorDTO dto)
         {
-            if (id != dto.IndicadorId)
+            if (id != dto.Id)
             {
                 return BadRequest("El ID de la ruta y el ID del objeto no coinciden");
             }
@@ -107,7 +107,7 @@ namespace beneficiarios_dif_api.Controllers
 
         private bool IndicadorExists(int id)
         {
-            return _context.Indicadores.Any(e => e.IndicadorId == id);
+            return _context.Indicadores.Any(e => e.Id == id);
         }
     }
 }

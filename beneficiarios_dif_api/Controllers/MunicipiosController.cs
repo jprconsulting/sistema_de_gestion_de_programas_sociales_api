@@ -21,7 +21,7 @@ namespace beneficiarios_dif_api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<MunicipioDTO>>> GetMunicipiosConBeneficiariosYColores()
+        public async Task<ActionResult<List<TotalBeneficiariosMunicipioDTO>>> GetMunicipiosConBeneficiariosYColores()
         {
             try
             {
@@ -35,7 +35,7 @@ namespace beneficiarios_dif_api.Controllers
                     var color = indicador != null ? indicador.Color : "#FFFFFF"; 
                     var descripcionIndicador = indicador != null ? indicador.Descripcion : "Sin descripción"; 
 
-                    return new MunicipioDTO
+                    return new TotalBeneficiariosMunicipioDTO
                     {
                         Id = m.Id,
                         Nombre = m.Nombre,

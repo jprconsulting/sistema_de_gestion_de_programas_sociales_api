@@ -88,9 +88,9 @@ namespace beneficiariosdifapi.Migrations
                     b.ToTable("Beneficiarios");
                 });
 
-            modelBuilder.Entity("beneficiarios_dif_api.Entities.Indicadores", b =>
+            modelBuilder.Entity("beneficiarios_dif_api.Entities.Indicador", b =>
                 {
-                    b.Property<int?>("IndicadorId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
@@ -106,7 +106,7 @@ namespace beneficiariosdifapi.Migrations
                     b.Property<int>("RangoInicial")
                         .HasColumnType("int");
 
-                    b.HasKey("IndicadorId");
+                    b.HasKey("Id");
 
                     b.ToTable("Indicadores");
                 });
