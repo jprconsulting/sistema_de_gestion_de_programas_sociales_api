@@ -4,6 +4,10 @@ using beneficiarios_dif_api.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace beneficiarios_dif_api.Controllers
 {
@@ -20,7 +24,7 @@ namespace beneficiarios_dif_api.Controllers
             this.mapper = mapper;
         }
 
-        [HttpGet]
+        [HttpGet("obtener-indicador")]
         public async Task<ActionResult<List<TotalBeneficiariosMunicipioDTO>>> GetMunicipiosConBeneficiariosYColores()
         {
             try
@@ -32,8 +36,8 @@ namespace beneficiarios_dif_api.Controllers
                 {
                     var totalBeneficiarios = m.Beneficiarios.Count;
                     var indicador = indicadores.FirstOrDefault(i => totalBeneficiarios >= i.RangoInicial && totalBeneficiarios <= i.RangoFinal);
-                    var color = indicador != null ? indicador.Color : "#FFFFFF"; 
-                    var descripcionIndicador = indicador != null ? indicador.Descripcion : "Sin descripción"; 
+                    var color = indicador != null ? indicador.Color : "#FFFFFF";
+                    var descripcionIndicador = indicador != null ? indicador.Descripcion : "Sin descripción";
 
                     return new TotalBeneficiariosMunicipioDTO
                     {
@@ -53,6 +57,11 @@ namespace beneficiarios_dif_api.Controllers
             }
         }
 
+        [HttpGet("obtener-todos")]
+        public async Task<ActionResult<List<MunicipioDTO>>> GetMunicipios()
+        {
+            var municipios = await context.Municipios.ToListAsync();
+            return mapper.Map<List<MunicipioDTO>>(municipios);
+        }
     }
 }
-
