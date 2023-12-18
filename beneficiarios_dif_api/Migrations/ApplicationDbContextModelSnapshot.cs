@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using beneficiarios_dif_api;
+using beneficiarios_dif_api.Entities;
 
 #nullable disable
 
@@ -203,6 +204,27 @@ namespace beneficiariosdifapi.Migrations
 
                     b.ToTable("Usuarios");
                 });
+
+            modelBuilder.Entity("beneficiarios_dif_api.Entities.Evidencias", b =>
+            {
+                b.Property<int?>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
+
+                b.Property<int>("BeneficiarioId")
+                    .HasColumnType("int");
+
+                b.Property<string>("Descripcion")
+                    .HasColumnType("longtext");
+
+                b.Property<string>("Foto")
+                    .HasColumnType("longtext");
+
+                b.HasKey("Id");
+
+
+                b.ToTable("Evidencias");
+            });
 
             modelBuilder.Entity("beneficiarios_dif_api.Entities.Beneficiario", b =>
                 {

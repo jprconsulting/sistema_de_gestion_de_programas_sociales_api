@@ -28,6 +28,9 @@ namespace beneficiarios_dif_api.Utilities
             CreateMap<Indicador, IndicadorDTO>();
             CreateMap<IndicadorDTO, Indicador>();
 
+            CreateMap<Evidencia, EvidenciaDTO>();
+            CreateMap<EvidenciaDTO, Evidencia>();
+
         }
     }
 }
