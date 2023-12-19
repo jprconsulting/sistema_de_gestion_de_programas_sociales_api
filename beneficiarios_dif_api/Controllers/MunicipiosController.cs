@@ -63,5 +63,35 @@ namespace beneficiarios_dif_api.Controllers
             var municipios = await context.Municipios.ToListAsync();
             return mapper.Map<List<MunicipioDTO>>(municipios);
         }
+
+        [HttpGet("obtener-color")]
+        public async Task<ActionResult<List<MunicipioColorDTO>>> GetMunicipiosConColores()
+        {
+            try
+            {
+                var municipios = await context.Municipios.Include(m => m.Beneficiarios).ToListAsync();
+                var indicadores = await context.Indicadores.ToListAsync();
+
+                var municipiosDTO = municipios.Select(m =>
+                {
+                    var totalBeneficiarios = m.Beneficiarios.Count;
+                    var indicador = indicadores.FirstOrDefault(i => totalBeneficiarios >= i.RangoInicial && totalBeneficiarios <= i.RangoFinal);
+                    var color = indicador != null ? indicador.Color : "#FFFFFF";
+
+                    return new MunicipioColorDTO
+                    {
+                        Id = m.Id,
+                        Color = color
+                    };
+                }).ToList();
+
+                return municipiosDTO;
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error al obtener municipios con colores: {ex.Message}");
+            }
+        }
+
     }
 }
