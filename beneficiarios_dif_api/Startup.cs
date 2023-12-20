@@ -1,4 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using beneficiarios_dif_api.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace beneficiarios_dif_api
 {
@@ -34,9 +38,26 @@ namespace beneficiarios_dif_api
 
             services.AddAutoMapper(typeof(Startup));
 
-            //Inyeccion de dependecias de los servicios
-            // services.AddScoped<IAutorizacionService, AutorizacionService>();
-            // services.AddTransient<Utilis>();
+            services.AddScoped<IAuthorizationService, AuthorizationService>();
+
+            var key = Configuration.GetValue<string>("JwtSettings:key");
+            var keyBytes = Encoding.UTF8.GetBytes(key);
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
 
 
 
@@ -56,6 +77,7 @@ namespace beneficiarios_dif_api
 
             app.UseHttpsRedirection();
             app.UseRouting();
+            app.UseAuthentication();
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {

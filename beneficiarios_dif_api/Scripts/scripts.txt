@@ -66,3 +66,6 @@ VALUES
 ('Administrador'),
 ('Operador'),
 ('Brigadista');
+
+
+INSERT INTO claims (Id, ClaimType, ClaimValue, RolId) VALUES (NULL, 'CanAccessUsuarios', '1', '1'), (NULL, 'CanAccessBeneficiarios', '1', '1');

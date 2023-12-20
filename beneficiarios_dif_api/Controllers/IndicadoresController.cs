@@ -107,7 +107,7 @@ namespace beneficiarios_dif_api.Controllers
 
         private bool IndicadorExists(int id)
         {
-            return _context.Indicadores.Any(e => e.IndicadorId == id);
+            return _context.Indicadores.Any(e => e.Id == id);
         }
     }
 }
