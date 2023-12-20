@@ -26,20 +26,21 @@ namespace beneficiarios_dif_api.Controllers
         [HttpPost("crear")]
         public async Task<ActionResult> Create(ProgramaSocialDTO dto)
         {
-            //var programaSocial = new ProgramaSocial
-            //{
-            //    Nombre = dto.Nombre,
-            //    Descripcion = dto.Descripcion,
-            //    Color = dto.Color,
-            //    Estatus = dto.Estatus,
-            //    AreaAdscripcionId = dto.AreaAdscripcionId,
-            //    Acronimo = dto.Acronimo
-            //};
+            var programaSocial = new ProgramaSocial
+            {
+                Nombre = dto.Nombre,
+                Descripcion = dto.Descripcion,
+                Color = dto.Color,
+                Estatus = dto.Estatus,
+                Acronimo = dto.Acronimo,
+                AreaAdscripcionId = dto.AreaAdscripcionId 
+            };
 
-            //context.Add(programaSocial);
-            //await context.SaveChangesAsync();
+            context.Add(programaSocial);
+            await context.SaveChangesAsync();
             return Ok();
         }
+
 
         [HttpDelete("eliminar/{id:int}")]
         public async Task<ActionResult> Delete(int id)
@@ -60,40 +61,40 @@ namespace beneficiarios_dif_api.Controllers
         [HttpPut("actualizar/{id:int}")]
         public async Task<ActionResult> Update(int id, ProgramaSocialDTO dto)
         {
-            //if (id != dto.Id)
-            //{
-            //    return BadRequest("El ID de la ruta y el ID del objeto no coinciden");
-            //}
+            if (id != dto.Id)
+            {
+                return BadRequest("El ID de la ruta y el ID del objeto no coinciden");
+            }
 
-            //var programaSocial = await context.ProgramasSociales.FindAsync(id);
+            var programaSocial = await context.ProgramasSociales.FindAsync(id);
 
-            //if (programaSocial == null)
-            //{
-            //    return NotFound();
-            //}
+            if (programaSocial == null)
+            {
+                return NotFound();
+            }
 
-            //programaSocial.Nombre = dto.Nombre;
-            //programaSocial.Descripcion = dto.Descripcion;
-            //programaSocial.Color = dto.Color;
-            //programaSocial.Estatus = dto.Estatus;
-            //programaSocial.AreaAdscripcionId = dto.AreaAdscripcionId;
-            //programaSocial.Acronimo = dto.Acronimo;
+            programaSocial.Nombre = dto.Nombre;
+            programaSocial.Descripcion = dto.Descripcion;
+            programaSocial.Color = dto.Color;
+            programaSocial.Estatus = dto.Estatus;
+            programaSocial.AreaAdscripcionId = dto.AreaAdscripcionId;
+            programaSocial.Acronimo = dto.Acronimo;
 
-            //try
-            //{
-            //    await context.SaveChangesAsync();
-            //}
-            //catch (DbUpdateConcurrencyException)
-            //{
-            //    if (!ProgramaSocialExists(id))
-            //    {
-            //        return NotFound();
-            //    }
-            //    else
-            //    {
-            //        throw;
-            //    }
-            //}
+            try
+            {
+                await context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ProgramaSocialExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return NoContent();
         }
