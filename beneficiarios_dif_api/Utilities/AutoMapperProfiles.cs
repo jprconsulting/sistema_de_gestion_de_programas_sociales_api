@@ -31,6 +31,14 @@ namespace beneficiarios_dif_api.Utilities
             CreateMap<Evidencia, EvidenciaDTO>();
             CreateMap<EvidenciaDTO, Evidencia>();
 
+            CreateMap<Claim, ClaimDTO>()
+            .ForMember(dest => dest.RolId, opt => opt.MapFrom(src => src.Rol.Id))
+            .IncludeMembers(src => src.Rol);
+
+            CreateMap<Rol, ClaimDTO>()
+            .ForMember(dest => dest.RolId, opt => opt.MapFrom(src => src.Id));
+
+
         }
     }
 }

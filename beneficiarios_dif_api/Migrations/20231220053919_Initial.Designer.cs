@@ -11,7 +11,7 @@ using beneficiarios_dif_api;
 namespace beneficiariosdifapi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20231203223131_Initial")]
+    [Migration("20231220053919_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -72,13 +72,13 @@ namespace beneficiariosdifapi.Migrations
                     b.Property<decimal>("Longitud")
                         .HasColumnType("decimal(65,30)");
 
-                    b.Property<int?>("MunicipioId")
+                    b.Property<int>("MunicipioId")
                         .HasColumnType("int");
 
                     b.Property<string>("Nombres")
                         .HasColumnType("longtext");
 
-                    b.Property<int?>("ProgramaSocialId")
+                    b.Property<int>("ProgramaSocialId")
                         .HasColumnType("int");
 
                     b.Property<int>("Sexo")
@@ -88,9 +88,72 @@ namespace beneficiariosdifapi.Migrations
 
                     b.HasIndex("MunicipioId");
 
-                    b.HasIndex("ProgramaSocialId");
-
                     b.ToTable("Beneficiarios");
+                });
+
+            modelBuilder.Entity("beneficiarios_dif_api.Entities.Claim", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("ClaimValue")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("RolId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RolId");
+
+                    b.ToTable("Claims");
+                });
+
+            modelBuilder.Entity("beneficiarios_dif_api.Entities.Evidencia", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("BeneficiarioId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Descripcion")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Foto")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Evidencias");
+                });
+
+            modelBuilder.Entity("beneficiarios_dif_api.Entities.Indicador", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Color")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Descripcion")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("RangoFinal")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RangoInicial")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Indicadores");
                 });
 
             modelBuilder.Entity("beneficiarios_dif_api.Entities.Municipio", b =>
@@ -112,6 +175,9 @@ namespace beneficiariosdifapi.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    b.Property<string>("Acronimo")
+                        .HasColumnType("longtext");
 
                     b.Property<int?>("AreaAdscripcionId")
                         .HasColumnType("int");
@@ -173,7 +239,7 @@ namespace beneficiariosdifapi.Migrations
                     b.Property<string>("Password")
                         .HasColumnType("longtext");
 
-                    b.Property<int?>("RolId")
+                    b.Property<int>("RolId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -185,17 +251,22 @@ namespace beneficiariosdifapi.Migrations
 
             modelBuilder.Entity("beneficiarios_dif_api.Entities.Beneficiario", b =>
                 {
-                    b.HasOne("beneficiarios_dif_api.Entities.Municipio", "Municipio")
+                    b.HasOne("beneficiarios_dif_api.Entities.Municipio", null)
                         .WithMany("Beneficiarios")
-                        .HasForeignKey("MunicipioId");
+                        .HasForeignKey("MunicipioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
 
-                    b.HasOne("beneficiarios_dif_api.Entities.ProgramaSocial", "ProgramaSocial")
-                        .WithMany()
-                        .HasForeignKey("ProgramaSocialId");
+            modelBuilder.Entity("beneficiarios_dif_api.Entities.Claim", b =>
+                {
+                    b.HasOne("beneficiarios_dif_api.Entities.Rol", "Rol")
+                        .WithMany("Claims")
+                        .HasForeignKey("RolId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("Municipio");
-
-                    b.Navigation("ProgramaSocial");
+                    b.Navigation("Rol");
                 });
 
             modelBuilder.Entity("beneficiarios_dif_api.Entities.ProgramaSocial", b =>
@@ -211,7 +282,9 @@ namespace beneficiariosdifapi.Migrations
                 {
                     b.HasOne("beneficiarios_dif_api.Entities.Rol", "Rol")
                         .WithMany("Usuarios")
-                        .HasForeignKey("RolId");
+                        .HasForeignKey("RolId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Rol");
                 });
@@ -228,6 +301,8 @@ namespace beneficiariosdifapi.Migrations
 
             modelBuilder.Entity("beneficiarios_dif_api.Entities.Rol", b =>
                 {
+                    b.Navigation("Claims");
+
                     b.Navigation("Usuarios");
                 });
 #pragma warning restore 612, 618
