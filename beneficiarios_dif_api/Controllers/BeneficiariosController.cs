@@ -1,4 +1,5 @@
-﻿using beneficiarios_dif_api.DTOs;
+﻿using AutoMapper;
+using beneficiarios_dif_api.DTOs;
 using beneficiarios_dif_api.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,75 +12,77 @@ namespace beneficiarios_dif_api.Controllers
     public class BeneficiariosController : ControllerBase
     {
         private readonly ApplicationDbContext context;
+        private readonly IMapper mapper;
 
-        public BeneficiariosController(ApplicationDbContext context)
+        public BeneficiariosController(ApplicationDbContext context, IMapper mapper)
         {
             this.context = context;
+            this.mapper = mapper;
+        }
+
+        [HttpGet("obtener-por-id/{id:int}")]
+        public async Task<ActionResult<BeneficiarioDTO>> GetById(int id)
+        {
+            var beneficiario = await context.Beneficiarios
+                .Include(p => p.ProgramaSocial)
+                .ThenInclude(a => a.AreaAdscripcion)
+                .Include(m => m.Municipio)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (beneficiario == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(mapper.Map<BeneficiarioDTO>(beneficiario));
         }
 
         [HttpGet("obtener-todos")]
-        public async Task<ActionResult<List<BeneficiarioDTO>>> GetBeneficiarios()
+        public async Task<ActionResult<List<BeneficiarioDTO>>> GetAll()
         {
+            var beneficiarios = await context.Beneficiarios
+                 .Include(p => p.ProgramaSocial)
+                 .ThenInclude(a => a.AreaAdscripcion)
+                 .Include(m => m.Municipio)
+                 .ToListAsync();
+
+            if (!beneficiarios.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(mapper.Map<List<BeneficiarioDTO>>(beneficiarios));
+        }
+
+        [HttpPost("crear")]
+        public async Task<ActionResult> Post(BeneficiarioDTO dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var existeBeneficiario = await context.Beneficiarios.AnyAsync(b => b.Nombres == dto.Nombres && b.ApellidoPaterno == dto.ApellidoPaterno);
+
+            if (existeBeneficiario)
+            {
+                return Conflict();
+            }
+
+            var beneficiario = mapper.Map<Beneficiario>(dto);          
+            beneficiario.ProgramaSocial = await context.ProgramasSociales.SingleOrDefaultAsync(p => p.Id == dto.ProgramaSocial.Id);
+            beneficiario.Municipio = await context.Municipios.SingleOrDefaultAsync(m => m.Id == dto.Municipio.Id);
+            context.Add(beneficiario);
+
             try
             {
-                var beneficiarios = await context.Beneficiarios.ToListAsync();
-                var beneficiariosDTO = beneficiarios.Select(b =>
-                    new BeneficiarioDTO
-                    {
-                        Id = b.Id,
-                        Nombres = b.Nombres,
-                        ApellidoPaterno = b.ApellidoPaterno,
-                        ApellidoMaterno = b.ApellidoMaterno,
-                        FechaNacimiento = b.FechaNacimiento,
-                        NombreCompleto2 = $"{b.Nombres} {b.ApellidoPaterno} {b.ApellidoMaterno}",
-                        Domicilio = b.Domicilio,
-                        Sexo = b.Sexo,
-                        CURP = b.CURP,
-                        Latitud = b.Latitud,
-                        Longitud = b.Longitud,
-                        Estatus = b.Estatus,
-                        MunicipioId = b.MunicipioId,
-                        ProgramaSocialId = b.ProgramaSocialId,
-                    }).ToList();
-
-                // Calcular el nombre completo antes de enviar el DTO
-                foreach (var beneficiario in beneficiariosDTO)
-                {
-                    var tipo = beneficiario.GetType();
-                    tipo.GetProperty("NombreCompleto").SetValue(beneficiario, $"{beneficiario.Nombres} {beneficiario.ApellidoPaterno} {beneficiario.ApellidoMaterno}");
-                }
-
-                return beneficiariosDTO;
+                await context.SaveChangesAsync();
+                return Ok();
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Error al obtener beneficiarios: {ex.Message}");
+                return StatusCode(500, new { error = "Error interno del servidor.", details = ex.Message });
             }
-        }
-
-
-        [HttpPost("crear")]
-        public async Task<ActionResult> Create(BeneficiarioDTO dto)
-        {
-            var beneficiario = new Beneficiario
-            {
-                Nombres = dto.Nombres,
-                ApellidoPaterno = dto.ApellidoPaterno,
-                ApellidoMaterno = dto.ApellidoMaterno,
-                FechaNacimiento = dto.FechaNacimiento,
-                Domicilio = dto.Domicilio,
-                Sexo = dto.Sexo,
-                CURP = dto.CURP,
-                Latitud = dto.Latitud,
-                Longitud = dto.Longitud,
-                Estatus = dto.Estatus,
-                MunicipioId = dto.MunicipioId,
-                ProgramaSocialId = dto.ProgramaSocialId
-            };
-
-            context.Add(beneficiario);
-            await context.SaveChangesAsync();
-            return Ok();
         }
 
         [HttpDelete("eliminar/{id:int}")]
@@ -113,18 +116,9 @@ namespace beneficiarios_dif_api.Controllers
                 return NotFound();
             }
 
-            beneficiario.Nombres = dto.Nombres;
-            beneficiario.ApellidoPaterno = dto.ApellidoPaterno;
-            beneficiario.ApellidoMaterno = dto.ApellidoMaterno;
-            beneficiario.FechaNacimiento = dto.FechaNacimiento;
-            beneficiario.Domicilio = dto.Domicilio;
-            beneficiario.Sexo = dto.Sexo;
-            beneficiario.CURP = dto.CURP;
-            beneficiario.Latitud = dto.Latitud;
-            beneficiario.Longitud = dto.Longitud;
-            beneficiario.Estatus = dto.Estatus;
-            beneficiario.MunicipioId = dto.MunicipioId;
-            beneficiario.ProgramaSocialId = dto.ProgramaSocialId;
+            mapper.Map(dto, beneficiario);
+            beneficiario.ProgramaSocial = await context.ProgramasSociales.SingleOrDefaultAsync(p => p.Id == dto.ProgramaSocial.Id);
+            beneficiario.Municipio = await context.Municipios.SingleOrDefaultAsync(m => m.Id == dto.Municipio.Id);
 
             try
             {
@@ -149,5 +143,39 @@ namespace beneficiarios_dif_api.Controllers
         {
             return context.Beneficiarios.Any(e => e.Id == id);
         }
+
+        [HttpGet("total-beneficiarios-por-municipio")]
+        public async Task<ActionResult<List<TotalBeneficiariosMunicipioDTO>>> GetTotalBeneficiariosPorMunicipio()
+        {
+            try
+            {
+                var municipios = await context.Municipios.Include(m => m.Beneficiarios).ToListAsync();
+                var indicadores = await context.Indicadores.ToListAsync();
+
+                var municipiosDTO = municipios.Select(m =>
+                {
+                    var totalBeneficiarios = m.Beneficiarios.Count;
+                    var indicador = indicadores.FirstOrDefault(i => totalBeneficiarios >= i.RangoInicial && totalBeneficiarios <= i.RangoFinal);
+                    var color = indicador != null ? indicador.Color : "#FFFFFF";
+                    var descripcionIndicador = indicador != null ? indicador.Descripcion : "Sin descripción";
+
+                    return new TotalBeneficiariosMunicipioDTO
+                    {
+                        Id = m.Id,
+                        Nombre = m.Nombre,
+                        TotalBeneficiarios = totalBeneficiarios,
+                        Color = color,
+                        DescripcionIndicador = descripcionIndicador
+                    };
+                }).ToList();
+
+                return Ok(municipiosDTO);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+        }
+
     }
 }

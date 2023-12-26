@@ -13,7 +13,8 @@
         public decimal Latitud { get; set; }
         public decimal Longitud { get; set; }
         public bool Estatus { get; set; }
-        public int MunicipioId { get; set; }
-        public int ProgramaSocialId { get; set; }
+        public ProgramaSocial ProgramaSocial { get; set; }
+        public Municipio Municipio { get; set; }
+        public List<Visita> Visitas { get; set; }
     }
 }

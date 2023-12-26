@@ -87,9 +87,9 @@ VALUES
 
 INSERT INTO beneficiarios.indicadores (RangoInicial, RangoFinal, Descripcion, Color) 
 VALUES 
-('0', '1' , 'Bajo', '#FF0000');
-('2', '3' , 'Medio', '#ffff00');
-('4', '5' , 'Alto', '#008f39');
+(0, 1 , 'Bajo', '#D84315'),
+(2, 3 , 'Medio', '#FFC107'),
+(4, 5 , 'Alto', '#00C853');
 
 
 INSERT INTO beneficiarios.ProgramasSociales (Nombre, Descripcion, Color, Estatus, Acronimo, AreaAdscripcionId) 

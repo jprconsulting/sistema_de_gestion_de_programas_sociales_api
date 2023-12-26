@@ -20,15 +20,20 @@ namespace beneficiarios_dif_api.Controllers
             this.mapper = mapper;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<List<RolDTO>>> GetRols()
+        [HttpGet("obtener-todos")]
+        public async Task<ActionResult<List<RolDTO>>> GetAll()
         {
-
             var rols = await context.Rols.ToListAsync();
-            return mapper.Map<List<RolDTO>>(rols);
+
+            if (!rols.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(mapper.Map<List<RolDTO>>(rols));
         }
 
-        [HttpPost]
+        [HttpPost("crear")]
         public async Task<ActionResult> Post(RolDTO dto)
         {
             var existeRol = await context.Rols.AnyAsync(r => r.NombreRol == dto.NombreRol);

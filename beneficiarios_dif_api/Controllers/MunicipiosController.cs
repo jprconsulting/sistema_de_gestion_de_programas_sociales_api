@@ -22,76 +22,20 @@ namespace beneficiarios_dif_api.Controllers
         {
             this.context = context;
             this.mapper = mapper;
-        }
-
-        [HttpGet("obtener-indicador")]
-        public async Task<ActionResult<List<TotalBeneficiariosMunicipioDTO>>> GetMunicipiosConBeneficiariosYColores()
-        {
-            try
-            {
-                var municipios = await context.Municipios.Include(m => m.Beneficiarios).ToListAsync();
-                var indicadores = await context.Indicadores.ToListAsync();
-
-                var municipiosDTO = municipios.Select(m =>
-                {
-                    var totalBeneficiarios = m.Beneficiarios.Count;
-                    var indicador = indicadores.FirstOrDefault(i => totalBeneficiarios >= i.RangoInicial && totalBeneficiarios <= i.RangoFinal);
-                    var color = indicador != null ? indicador.Color : "#FFFFFF";
-                    var descripcionIndicador = indicador != null ? indicador.Descripcion : "Sin descripción";
-
-                    return new TotalBeneficiariosMunicipioDTO
-                    {
-                        Id = m.Id,
-                        Nombre = m.Nombre,
-                        TotalBeneficiarios = totalBeneficiarios,
-                        Color = color,
-                        DescripcionIndicador = descripcionIndicador
-                    };
-                }).ToList();
-
-                return municipiosDTO;
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Error al obtener municipios con beneficiarios y colores: {ex.Message}");
-            }
-        }
+        }       
 
         [HttpGet("obtener-todos")]
-        public async Task<ActionResult<List<MunicipioDTO>>> GetMunicipios()
+        public async Task<ActionResult<List<MunicipioDTO>>> GetAll()
         {
             var municipios = await context.Municipios.ToListAsync();
-            return mapper.Map<List<MunicipioDTO>>(municipios);
-        }
 
-        [HttpGet("obtener-color")]
-        public async Task<ActionResult<List<MunicipioColorDTO>>> GetMunicipiosConColores()
-        {
-            try
+            if (!municipios.Any())
             {
-                var municipios = await context.Municipios.Include(m => m.Beneficiarios).ToListAsync();
-                var indicadores = await context.Indicadores.ToListAsync();
-
-                var municipiosDTO = municipios.Select(m =>
-                {
-                    var totalBeneficiarios = m.Beneficiarios.Count;
-                    var indicador = indicadores.FirstOrDefault(i => totalBeneficiarios >= i.RangoInicial && totalBeneficiarios <= i.RangoFinal);
-                    var color = indicador != null ? indicador.Color : "#FFFFFF";
-
-                    return new MunicipioColorDTO
-                    {
-                        Id = m.Id,
-                        Color = color
-                    };
-                }).ToList();
-
-                return municipiosDTO;
+                return NotFound();
             }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Error al obtener municipios con colores: {ex.Message}");
-            }
-        }
+
+            return Ok(mapper.Map<List<MunicipioDTO>>(municipios));
+        }      
 
     }
 }

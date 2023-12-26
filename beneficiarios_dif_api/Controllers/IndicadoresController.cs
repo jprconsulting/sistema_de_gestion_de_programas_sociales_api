@@ -14,81 +14,87 @@ namespace beneficiarios_dif_api.Controllers
     [ApiController]
     public class IndicadoresController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IMapper _mapper;
+        private readonly ApplicationDbContext context;
+        private readonly IMapper mapper;
 
         public IndicadoresController(ApplicationDbContext context, IMapper mapper)
         {
-            _context = context;
-            _mapper = mapper;
+            this.context = context;
+            this.mapper = mapper;
         }
 
         [HttpGet("obtener-por-id/{id:int}")]
         public async Task<ActionResult<IndicadorDTO>> GetById(int id)
         {
-            var indicador = await _context.Indicadores.FindAsync(id);
+            var indicador = await context.Indicadores.FindAsync(id);
 
             if (indicador == null)
             {
                 return NotFound();
             }
 
-            return _mapper.Map<IndicadorDTO>(indicador);
+            return Ok(mapper.Map<IndicadorDTO>(indicador));
         }
 
         [HttpGet("obtener-todos")]
-        public async Task<ActionResult<List<IndicadorDTO>>> GetIndicadores()
+        public async Task<ActionResult<List<IndicadorDTO>>> GetAll()
         {
-            var indicadores = await _context.Indicadores.ToListAsync();
-            return _mapper.Map<List<IndicadorDTO>>(indicadores);
+            var indicadores = await context.Indicadores.ToListAsync();
+
+            if (!indicadores.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(mapper.Map<List<IndicadorDTO>>(indicadores));
         }
 
         [HttpPost("crear")]
         public async Task<ActionResult> Post(IndicadorDTO dto)
         {
-            var indicador = _mapper.Map<Indicador>(dto);
+            var indicador = mapper.Map<Indicador>(dto);
 
-            _context.Indicadores.Add(indicador);
-            await _context.SaveChangesAsync();
+            context.Indicadores.Add(indicador);
+            await context.SaveChangesAsync();
             return Ok();
         }
 
         [HttpDelete("eliminar/{id:int}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var indicador = await _context.Indicadores.FindAsync(id);
+            var indicador = await context.Indicadores.FindAsync(id);
 
             if (indicador == null)
             {
                 return NotFound();
             }
 
-            _context.Indicadores.Remove(indicador);
-            await _context.SaveChangesAsync();
+            context.Indicadores.Remove(indicador);
+            await context.SaveChangesAsync();
 
             return NoContent();
         }
 
         [HttpPut("actualizar/{id:int}")]
-        public async Task<ActionResult> Edit(int id, [FromBody] IndicadorDTO dto)
+        public async Task<ActionResult> Put(int id, [FromBody] IndicadorDTO dto)
         {
             if (id != dto.Id)
             {
                 return BadRequest("El ID de la ruta y el ID del objeto no coinciden");
             }
 
-            var indicador = await _context.Indicadores.FindAsync(id);
+            var indicador = await context.Indicadores.FindAsync(id);
 
             if (indicador == null)
             {
                 return NotFound();
             }
 
-            _mapper.Map(dto, indicador);
+            mapper.Map(dto, indicador);
 
             try
             {
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -107,7 +113,7 @@ namespace beneficiarios_dif_api.Controllers
 
         private bool IndicadorExists(int id)
         {
-            return _context.Indicadores.Any(e => e.Id == id);
+            return context.Indicadores.Any(e => e.Id == id);
         }
     }
 }

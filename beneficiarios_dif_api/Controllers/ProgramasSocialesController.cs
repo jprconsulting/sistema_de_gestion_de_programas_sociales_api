@@ -1,6 +1,6 @@
-﻿using beneficiarios_dif_api.DTOs;
+﻿using AutoMapper;
+using beneficiarios_dif_api.DTOs;
 using beneficiarios_dif_api.Entities;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,35 +11,73 @@ namespace beneficiarios_dif_api.Controllers
     public class ProgramasSocialesController : ControllerBase
     {
         private readonly ApplicationDbContext context;
+        private readonly IMapper mapper;
 
-        public ProgramasSocialesController(ApplicationDbContext context)
+        public ProgramasSocialesController(ApplicationDbContext context, IMapper mapper)
         {
             this.context = context;
+            this.mapper = mapper;
+        }
+
+        [HttpGet("obtener-por-id/{id:int}")]
+        public async Task<ActionResult<ProgramaSocialDTO>> GetById(int id)
+        {
+            var programaSocial = await context.ProgramasSociales
+                .Include(a => a.AreaAdscripcion)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (programaSocial == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(mapper.Map<ProgramaSocialDTO>(programaSocial));
         }
 
         [HttpGet("obtener-todos")]
-        public async Task<ActionResult<List<ProgramaSocial>>> GetProgramasSociales()
+        public async Task<ActionResult<List<ProgramaSocialDTO>>> GetAll()
         {
-            return await context.ProgramasSociales.ToListAsync();
-        }
+            var programasSociales = await context.ProgramasSociales
+                .Include(a => a.AreaAdscripcion)
+                .ToListAsync();
+
+            if (!programasSociales.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(mapper.Map<List<ProgramaSocialDTO>>(programasSociales));
+        }       
 
         [HttpPost("crear")]
-        public async Task<ActionResult> Create(ProgramaSocialDTO dto)
+        public async Task<ActionResult> Post(ProgramaSocialDTO dto)
         {
-            var programaSocial = new ProgramaSocial
+            if (!ModelState.IsValid)
             {
-                Nombre = dto.Nombre,
-                Descripcion = dto.Descripcion,
-                Color = dto.Color,
-                Estatus = dto.Estatus,
-                Acronimo = dto.Acronimo,
-                AreaAdscripcionId = dto.AreaAdscripcionId 
-            };
+                return BadRequest(ModelState);
+            }
 
+            var existeProgramaSocial = await context.ProgramasSociales.AnyAsync(p => p.Nombre == dto.Nombre);
+
+            if (existeProgramaSocial)
+            {
+                return Conflict();
+            }
+
+            var programaSocial = mapper.Map<ProgramaSocial>(dto);
+            programaSocial.AreaAdscripcion = await context.AreasAdscripcion.SingleOrDefaultAsync(a => a.Id == dto.AreaAdscripcion.Id);
             context.Add(programaSocial);
-            await context.SaveChangesAsync();
-            return Ok();
-        }
+
+            try
+            {
+                await context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Error interno del servidor.", details = ex.Message });
+            }
+        }     
 
 
         [HttpDelete("eliminar/{id:int}")]
@@ -59,7 +97,7 @@ namespace beneficiarios_dif_api.Controllers
         }
 
         [HttpPut("actualizar/{id:int}")]
-        public async Task<ActionResult> Update(int id, ProgramaSocialDTO dto)
+        public async Task<ActionResult> Put(int id, ProgramaSocialDTO dto)
         {
             if (id != dto.Id)
             {
@@ -73,12 +111,8 @@ namespace beneficiarios_dif_api.Controllers
                 return NotFound();
             }
 
-            programaSocial.Nombre = dto.Nombre;
-            programaSocial.Descripcion = dto.Descripcion;
-            programaSocial.Color = dto.Color;
-            programaSocial.Estatus = dto.Estatus;
-            programaSocial.AreaAdscripcionId = dto.AreaAdscripcionId;
-            programaSocial.Acronimo = dto.Acronimo;
+            mapper.Map(dto, programaSocial);
+            programaSocial.AreaAdscripcion = await context.AreasAdscripcion.SingleOrDefaultAsync(a => a.Id == dto.AreaAdscripcion.Id);          
 
             try
             {

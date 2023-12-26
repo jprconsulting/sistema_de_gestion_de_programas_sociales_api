@@ -7,5 +7,6 @@
         public string Descripcion { get; set; }
         public bool Estatus { get; set; }
         public List<ProgramaSocial> ProgramasSociales { get; set; }
+        public List<Usuario> Usuarios { get; set; }
     }
 }

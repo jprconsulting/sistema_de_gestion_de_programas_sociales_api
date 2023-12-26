@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using beneficiarios_dif_api.DTOs;
 using beneficiarios_dif_api.Entities;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,11 +10,6 @@ namespace beneficiarios_dif_api.Controllers
     [ApiController]
     public class UsuariosController : ControllerBase
     {
-        private bool UsuarioExists(int id)
-        {
-            return context.Usuarios.Any(e => e.Id == id);
-        }
-
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
 
@@ -25,44 +19,87 @@ namespace beneficiarios_dif_api.Controllers
             this.mapper = mapper;
         }
 
-        [HttpGet("obtener/{id:int}")]
-        public async Task<ActionResult<UsuarioDetailDTO>> GetById(int id)
+        [HttpGet("obtener-por-id/{id:int}")]      
+        public async Task<ActionResult<UsuarioDTO>> GetById(int id)
         {
-            var usuario = await context.Usuarios.Include(i => i.Rol).FirstOrDefaultAsync(u => u.Id == id);
+            var usuario = await context.Usuarios
+                .Include(u => u.Rol)
+                .Include(u => u.AreaAdscripcion)
+                .FirstOrDefaultAsync(u => u.Id == id);
 
-            if (usuario == null) 
+            if (usuario == null)
             {
-                return NotFound();            
+                return NotFound();
             }
 
-            return mapper.Map<UsuarioDetailDTO>(usuario);
+            return Ok(mapper.Map<UsuarioDTO>(usuario));
         }
 
 
         [HttpGet("obtener-todos")]
-        public async Task<ActionResult<List<UsuarioDetailDTO>>> GetUsuarios()
+        public async Task<ActionResult<List<UsuarioDTO>>> GetAll()
         {
-            var usuarios = await context.Usuarios.Include(i => i.Rol).ToListAsync();
-            return mapper.Map<List<UsuarioDetailDTO>>(usuarios);
+            var usuarios = await context.Usuarios
+                .Include(i => i.Rol)
+                .Include(u => u.AreaAdscripcion)
+                .OrderBy(u => u.Id)
+                .ToListAsync();
+
+            if (!usuarios.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(mapper.Map<List<UsuarioDTO>>(usuarios));
         }
 
         [HttpPost("crear")]
-        public async Task<ActionResult> Post(UsuarioInsertDTO dto)
+        public async Task<ActionResult> Post(UsuarioDTO dto)
         {
-            var existeUsuario = await context.Usuarios.AnyAsync(u => u.Nombre == dto.Nombre && u.ApellidoPaterno == dto.ApellidoPaterno);
-
-            if (existeUsuario) 
+            // Validación del modelo
+            if (!ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(ModelState);
             }
 
+            // Verificación de la existencia del usuario
+            var existeUsuario = await context.Usuarios.AnyAsync(u => u.Nombre == dto.Nombre && u.ApellidoPaterno == dto.ApellidoPaterno);
+
+            if (existeUsuario)
+            {
+                // return Conflict(new { error = "El usuario ya existe." });
+                return Conflict();
+            }
+
+            // Mapeo del DTO a la entidad
             var usuario = mapper.Map<Usuario>(dto);
-            usuario.Rol = await context.Rols.SingleOrDefaultAsync(r => r.Id == dto.RolId);
 
+            // Asociar el rol
+            usuario.Rol = await context.Rols.SingleOrDefaultAsync(r => r.Id == dto.Rol.Id);
+            usuario.AreaAdscripcion = null;
+
+            // Solo si tiene rol de 'director' se agrega área de adscripción
+            if (dto.Rol.Id == 1)
+            {
+                usuario.AreaAdscripcion = await context.AreasAdscripcion.SingleOrDefaultAsync(a => a.Id == dto.AreaAdscripcion.Id);
+            }
+
+            // Incluir la entidad en el contexto
             context.Add(usuario);
-            await context.SaveChangesAsync();
-            return Ok();
 
+            try
+            {
+                // Guardar cambios en la base de datos dentro de una transacción
+                await context.SaveChangesAsync();
+                return Ok();
+                // return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                // Manejar errores de base de datos
+                // return StatusCode(500, new { error = "Error interno del servidor.", details = ex.Message });
+                return StatusCode(500);
+            }
         }
 
         [HttpDelete("eliminar/{id:int}")]
@@ -82,7 +119,7 @@ namespace beneficiarios_dif_api.Controllers
         }
 
         [HttpPut("actualizar/{id:int}")]
-        public async Task<ActionResult> Edit(int id, [FromBody] UsuarioInsertDTO dto)
+        public async Task<ActionResult> Put(int id, [FromBody] UsuarioDTO dto)
         {
             if (id != dto.Id)
             {
@@ -98,7 +135,14 @@ namespace beneficiarios_dif_api.Controllers
 
             // Mapea los datos del DTO al usuario existente
             mapper.Map(dto, usuario);
-            usuario.Rol = await context.Rols.SingleOrDefaultAsync(r => r.Id == dto.RolId);
+            usuario.Rol = await context.Rols.SingleOrDefaultAsync(r => r.Id == dto.Rol.Id);
+            usuario.AreaAdscripcion = null;
+
+            // Solo si tiene rol de 'director' se agrega área de adscripción
+            if (dto.Rol.Id == 1)
+            {
+                usuario.AreaAdscripcion = await context.AreasAdscripcion.SingleOrDefaultAsync(a => a.Id == dto.AreaAdscripcion.Id);
+            }
 
             try
             {
@@ -117,6 +161,11 @@ namespace beneficiarios_dif_api.Controllers
             }
 
             return NoContent();
+        }
+
+        private bool UsuarioExists(int id)
+        {
+            return context.Usuarios.Any(e => e.Id == id);
         }
 
     }

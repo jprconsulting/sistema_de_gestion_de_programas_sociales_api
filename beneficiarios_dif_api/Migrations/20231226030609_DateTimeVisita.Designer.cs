@@ -11,8 +11,8 @@ using beneficiarios_dif_api;
 namespace beneficiariosdifapi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20231220053919_Initial")]
-    partial class Initial
+    [Migration("20231226030609_DateTimeVisita")]
+    partial class DateTimeVisita
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -72,13 +72,13 @@ namespace beneficiariosdifapi.Migrations
                     b.Property<decimal>("Longitud")
                         .HasColumnType("decimal(65,30)");
 
-                    b.Property<int>("MunicipioId")
+                    b.Property<int?>("MunicipioId")
                         .HasColumnType("int");
 
                     b.Property<string>("Nombres")
                         .HasColumnType("longtext");
 
-                    b.Property<int>("ProgramaSocialId")
+                    b.Property<int?>("ProgramaSocialId")
                         .HasColumnType("int");
 
                     b.Property<int>("Sexo")
@@ -87,6 +87,8 @@ namespace beneficiariosdifapi.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("MunicipioId");
+
+                    b.HasIndex("ProgramaSocialId");
 
                     b.ToTable("Beneficiarios");
                 });
@@ -111,26 +113,6 @@ namespace beneficiariosdifapi.Migrations
                     b.HasIndex("RolId");
 
                     b.ToTable("Claims");
-                });
-
-            modelBuilder.Entity("beneficiarios_dif_api.Entities.Evidencia", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<int>("BeneficiarioId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Descripcion")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Foto")
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Evidencias");
                 });
 
             modelBuilder.Entity("beneficiarios_dif_api.Entities.Indicador", b =>
@@ -227,6 +209,9 @@ namespace beneficiariosdifapi.Migrations
                     b.Property<string>("ApellidoPaterno")
                         .HasColumnType("longtext");
 
+                    b.Property<int?>("AreaAdscripcionId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Correo")
                         .HasColumnType("longtext");
 
@@ -244,18 +229,51 @@ namespace beneficiariosdifapi.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AreaAdscripcionId");
+
                     b.HasIndex("RolId");
 
                     b.ToTable("Usuarios");
                 });
 
+            modelBuilder.Entity("beneficiarios_dif_api.Entities.Visita", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int?>("BeneficiarioId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Descripcion")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("FechaHoraVisita")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Foto")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BeneficiarioId");
+
+                    b.ToTable("Visitas");
+                });
+
             modelBuilder.Entity("beneficiarios_dif_api.Entities.Beneficiario", b =>
                 {
-                    b.HasOne("beneficiarios_dif_api.Entities.Municipio", null)
+                    b.HasOne("beneficiarios_dif_api.Entities.Municipio", "Municipio")
                         .WithMany("Beneficiarios")
-                        .HasForeignKey("MunicipioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("MunicipioId");
+
+                    b.HasOne("beneficiarios_dif_api.Entities.ProgramaSocial", "ProgramaSocial")
+                        .WithMany("Beneficiarios")
+                        .HasForeignKey("ProgramaSocialId");
+
+                    b.Navigation("Municipio");
+
+                    b.Navigation("ProgramaSocial");
                 });
 
             modelBuilder.Entity("beneficiarios_dif_api.Entities.Claim", b =>
@@ -280,21 +298,48 @@ namespace beneficiariosdifapi.Migrations
 
             modelBuilder.Entity("beneficiarios_dif_api.Entities.Usuario", b =>
                 {
+                    b.HasOne("beneficiarios_dif_api.Entities.AreaAdscripcion", "AreaAdscripcion")
+                        .WithMany("Usuarios")
+                        .HasForeignKey("AreaAdscripcionId");
+
                     b.HasOne("beneficiarios_dif_api.Entities.Rol", "Rol")
                         .WithMany("Usuarios")
                         .HasForeignKey("RolId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("AreaAdscripcion");
+
                     b.Navigation("Rol");
+                });
+
+            modelBuilder.Entity("beneficiarios_dif_api.Entities.Visita", b =>
+                {
+                    b.HasOne("beneficiarios_dif_api.Entities.Beneficiario", "Beneficiario")
+                        .WithMany("Visitas")
+                        .HasForeignKey("BeneficiarioId");
+
+                    b.Navigation("Beneficiario");
                 });
 
             modelBuilder.Entity("beneficiarios_dif_api.Entities.AreaAdscripcion", b =>
                 {
                     b.Navigation("ProgramasSociales");
+
+                    b.Navigation("Usuarios");
+                });
+
+            modelBuilder.Entity("beneficiarios_dif_api.Entities.Beneficiario", b =>
+                {
+                    b.Navigation("Visitas");
                 });
 
             modelBuilder.Entity("beneficiarios_dif_api.Entities.Municipio", b =>
+                {
+                    b.Navigation("Beneficiarios");
+                });
+
+            modelBuilder.Entity("beneficiarios_dif_api.Entities.ProgramaSocial", b =>
                 {
                     b.Navigation("Beneficiarios");
                 });

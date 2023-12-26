@@ -16,7 +16,7 @@ namespace beneficiarios_dif_api
         public DbSet<Rol> Rols { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Indicador> Indicadores { get; set; }
-        public DbSet<Evidencia> Evidencias { get; set; }
+        public DbSet<Visita> Visitas { get; set; }
         public DbSet<Claim> Claims { get; set; }
 
     }

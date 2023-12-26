@@ -30,7 +30,7 @@ namespace beneficiarios_dif_api.Controllers
 
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status200OK, new { mensaje = ex.Message });
+                return StatusCode(500);
             }
         }
 
