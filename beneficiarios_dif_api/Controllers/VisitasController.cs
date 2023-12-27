@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace beneficiarios_dif_api.Controllers
@@ -140,5 +141,49 @@ namespace beneficiarios_dif_api.Controllers
             await context.SaveChangesAsync();
             return NoContent();
         }
+
+        [HttpGet("obtener-nube-palabras")]
+        public async Task<ActionResult> WordCloud()
+        {
+            var comments = await context.Visitas.Select(v => v.Descripcion).ToListAsync();
+
+            if (!comments.Any())
+            {
+                return NotFound();
+            }
+
+            var wordCount = CountWords(comments);
+            return Ok(CreateModel(wordCount));
+        }
+
+        static Dictionary<string, int> CountWords(List<string> comments)
+        {
+            var words = comments.SelectMany(c => Regex.Matches(c.ToLower(), @"\b\w+\b").Select(match => match.Value)).ToList();
+
+            var wordCount = new Dictionary<string, int>();
+
+            foreach (var word in words)
+            {
+                if (wordCount.ContainsKey(word))
+                {
+                    wordCount[word]++;
+                }
+                else
+                {
+                    wordCount[word] = 1;
+                }
+            }
+
+            return wordCount;
+        }
+
+        static List<WordCloudDTO> CreateModel(Dictionary<string, int> wordCount)
+        {
+            return wordCount
+                .Select(pair => new WordCloudDTO { Name = pair.Key, Weight = pair.Value })
+                .OrderByDescending(modelo => modelo.Weight)
+                .ToList();
+        }
+
     }
 }
