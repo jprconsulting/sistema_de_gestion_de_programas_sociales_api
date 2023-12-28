@@ -41,6 +41,20 @@ namespace beneficiarios_dif_api.Controllers
             return Ok(mapper.Map<VisitaDTO>(visita));
         }
 
+        private string GetBase64Image(string fileName)
+        {
+            string filePath = Path.Combine(webHostEnvironment.WebRootPath, "images", fileName);
+
+            if (System.IO.File.Exists(filePath))
+            {
+                byte[] imageBytes = System.IO.File.ReadAllBytes(filePath);
+                string base64String = Convert.ToBase64String(imageBytes);
+                return base64String;
+            }
+
+            return null;
+        }
+
         [HttpGet("obtener-todos")]
         public async Task<ActionResult> GetAll()
         {
@@ -56,8 +70,17 @@ namespace beneficiarios_dif_api.Controllers
                 return NotFound();
             }
 
-            return Ok(mapper.Map<List<VisitaDTO>>(visitas));
+            var visitasDTO = mapper.Map<List<VisitaDTO>>(visitas);
+
+            foreach (var visita in visitasDTO)
+            {
+                visita.ImagenBase64 = GetBase64Image(visita.Foto); // Asigna el base64 de la imagen
+            }
+
+            return Ok(visitasDTO);
         }
+
+
 
         [HttpPost("crear")]
         public async Task<ActionResult> Post(VisitaDTO dto)
