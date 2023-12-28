@@ -11,8 +11,8 @@ using beneficiarios_dif_api;
 namespace beneficiariosdifapi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20231226030609_DateTimeVisita")]
-    partial class DateTimeVisita
+    [Migration("20231228043350_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

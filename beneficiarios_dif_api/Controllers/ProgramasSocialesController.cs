@@ -112,7 +112,8 @@ namespace beneficiarios_dif_api.Controllers
             }
 
             mapper.Map(dto, programaSocial);
-            programaSocial.AreaAdscripcion = await context.AreasAdscripcion.SingleOrDefaultAsync(a => a.Id == dto.AreaAdscripcion.Id);          
+            programaSocial.AreaAdscripcion = await context.AreasAdscripcion.SingleOrDefaultAsync(a => a.Id == dto.AreaAdscripcion.Id);
+            context.Update(programaSocial);
 
             try
             {

@@ -220,6 +220,7 @@ namespace beneficiariosdifapi.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Foto = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    FechaHoraVisita = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     BeneficiarioId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>

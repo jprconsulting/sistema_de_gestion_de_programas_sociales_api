@@ -63,6 +63,7 @@ VALUES
 
 INSERT INTO beneficiarios.rols (nombreRol)
 VALUES 
+('Director'),
 ('Administrador'),
 ('Operador'),
 ('Brigadista');

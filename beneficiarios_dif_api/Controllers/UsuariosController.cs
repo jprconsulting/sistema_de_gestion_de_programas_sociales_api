@@ -144,6 +144,8 @@ namespace beneficiarios_dif_api.Controllers
                 usuario.AreaAdscripcion = await context.AreasAdscripcion.SingleOrDefaultAsync(a => a.Id == dto.AreaAdscripcion.Id);
             }
 
+            context.Update(usuario);
+
             try
             {
                 await context.SaveChangesAsync();

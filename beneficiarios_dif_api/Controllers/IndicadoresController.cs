@@ -91,6 +91,7 @@ namespace beneficiarios_dif_api.Controllers
             }
 
             mapper.Map(dto, indicador);
+            context.Update(indicador);
 
             try
             {

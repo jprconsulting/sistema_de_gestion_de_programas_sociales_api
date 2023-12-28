@@ -102,7 +102,7 @@ namespace beneficiarios_dif_api.Controllers
         }
 
         [HttpPut("actualizar/{id:int}")]
-        public async Task<ActionResult> Update(int id, BeneficiarioDTO dto)
+        public async Task<ActionResult> Put(int id, BeneficiarioDTO dto)
         {
             if (id != dto.Id)
             {
@@ -119,6 +119,7 @@ namespace beneficiarios_dif_api.Controllers
             mapper.Map(dto, beneficiario);
             beneficiario.ProgramaSocial = await context.ProgramasSociales.SingleOrDefaultAsync(p => p.Id == dto.ProgramaSocial.Id);
             beneficiario.Municipio = await context.Municipios.SingleOrDefaultAsync(m => m.Id == dto.Municipio.Id);
+            context.Update(beneficiario);
 
             try
             {

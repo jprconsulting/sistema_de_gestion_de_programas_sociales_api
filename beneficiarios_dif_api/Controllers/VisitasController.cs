@@ -105,8 +105,10 @@ namespace beneficiarios_dif_api.Controllers
                 dto.Foto = fileName;
             }
 
-            visita.Beneficiario = await context.Beneficiarios.SingleOrDefaultAsync(b => b.Id == dto.Beneficiario.Id);
             mapper.Map(dto, visita);
+            visita.Beneficiario = await context.Beneficiarios.SingleOrDefaultAsync(b => b.Id == dto.Beneficiario.Id);
+
+            context.Update(visita);
 
             try
             {

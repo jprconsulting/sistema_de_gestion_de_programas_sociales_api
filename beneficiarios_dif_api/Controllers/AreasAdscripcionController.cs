@@ -105,6 +105,7 @@ namespace beneficiarios_dif_api.Controllers
             }
 
             mapper.Map(dto, areaAdscripcion);
+            context.Update(areaAdscripcion);
 
             try
             {
