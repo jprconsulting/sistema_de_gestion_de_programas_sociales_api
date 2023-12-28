@@ -471,3 +471,9 @@ TestResult.xml
 Version.cs
 Version.h
 Version.cpp
+
+# Imágenes
+*.png
+*.jpg
+*.jpeg
+*.gif
