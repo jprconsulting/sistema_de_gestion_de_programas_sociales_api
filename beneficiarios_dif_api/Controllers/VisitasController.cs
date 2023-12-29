@@ -58,26 +58,33 @@ namespace beneficiarios_dif_api.Controllers
         [HttpGet("obtener-todos")]
         public async Task<ActionResult> GetAll()
         {
-            var visitas = await context.Visitas
+            try
+            {
+                var visitas = await context.Visitas
                 .Include(v => v.Beneficiario)
                     .ThenInclude(b => b.ProgramaSocial)
                 .Include(v => v.Beneficiario)
                     .ThenInclude(b => b.Municipio)
                 .ToListAsync();
 
-            if (!visitas.Any())
-            {
-                return NotFound();
+                if (!visitas.Any())
+                {
+                    return NotFound();
+                }
+
+                var visitasDTO = mapper.Map<List<VisitaDTO>>(visitas);
+
+                foreach (var visita in visitasDTO)
+                {
+                    visita.ImagenBase64 = GetBase64Image(visita.Foto); // Asigna el base64 de la imagen
+                }
+
+                return Ok(visitasDTO);
             }
-
-            var visitasDTO = mapper.Map<List<VisitaDTO>>(visitas);
-
-            foreach (var visita in visitasDTO)
+            catch (Exception ex)
             {
-                visita.ImagenBase64 = GetBase64Image(visita.Foto); // Asigna el base64 de la imagen
-            }
-
-            return Ok(visitasDTO);
+                return StatusCode(500);
+            }            
         }
 
 
@@ -171,14 +178,36 @@ namespace beneficiarios_dif_api.Controllers
         public async Task<ActionResult> WordCloud()
         {
             var comments = await context.Visitas.Select(v => v.Descripcion).ToListAsync();
+            var wordCount = CountWords(comments);
 
-            if (!comments.Any())
+            var generalWordCloud = new GeneralWordCloudDTO
             {
-                return NotFound();
+                WordCloudPorMunicipios = new List<MunicipioWordCloudDTO>(),
+                GeneralWordCloud = CreateModel(wordCount)
+            };
+
+            var municipios = await context.Municipios.ToListAsync();
+
+            foreach (var municipio in municipios)
+            {
+                var visitasPorMunicipio = await context.Visitas
+                 .Include(v => v.Beneficiario)
+                    .ThenInclude(b => b.Municipio)
+                 .Where(v => v.Beneficiario.Municipio.Id == municipio.Id)
+                 .ToListAsync();
+
+                var commentsByMunicipio = visitasPorMunicipio.Select(v => v.Descripcion).ToList();
+                var wordCountByMunicipio = CountWords(commentsByMunicipio);
+                var municipioWordCloud = new MunicipioWordCloudDTO
+                {
+                    Id = municipio.Id,
+                    Nombre = municipio.Nombre,
+                    WordCloud = CreateModel(wordCountByMunicipio)
+                };
+                generalWordCloud.WordCloudPorMunicipios.Add(municipioWordCloud);
             }
 
-            var wordCount = CountWords(comments);
-            return Ok(CreateModel(wordCount));
+            return Ok(generalWordCloud);
         }
 
         static Dictionary<string, int> CountWords(List<string> comments)
