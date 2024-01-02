@@ -1,12 +1,14 @@
 ﻿using AutoMapper;
 using beneficiarios_dif_api.DTOs;
 using beneficiarios_dif_api.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace beneficiarios_dif_api.Controllers
 {
+    [Authorize]
     [Route("api/rols")]
     [ApiController]
     public class RolsController : ControllerBase

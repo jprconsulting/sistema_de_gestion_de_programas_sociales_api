@@ -69,7 +69,17 @@ VALUES
 ('Brigadista');
 
 
-INSERT INTO claims (Id, ClaimType, ClaimValue, RolId) VALUES (NULL, 'CanAccessUsuarios', '1', '1'), (NULL, 'CanAccessBeneficiarios', '1', '1');
+INSERT INTO claims (Id, ClaimType, ClaimValue, RolId) VALUES
+(NULL, 'CanAccessInicio', 1, 2),
+(NULL, 'CanAccessTablero', 1, 2),
+(NULL, 'CanAccessUsuarios', 1, 2), 
+(NULL, 'CanAccessAreasAdscripcion', 1, 2), 
+(NULL, 'CanAccessProgramasSociales', 1, 2),
+(NULL, 'CanAccessBeneficiarios', 1, 2),
+(NULL, 'CanAccessVisitas', 1, 2), 
+(NULL, 'CanAccessMapaBeneficiarios', 1, 2), 
+(NULL, 'CanAccessMapaProgramasSociales', 1, 2), 
+(NULL, 'CanAccessNubePalabras', 1, 2);
 
 
 INSERT INTO beneficiarios.areasadscripcion (Nombre, Descripcion, Estatus) VALUES

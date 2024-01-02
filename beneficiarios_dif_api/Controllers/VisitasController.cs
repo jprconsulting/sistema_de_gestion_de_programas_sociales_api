@@ -1,16 +1,13 @@
 ﻿using AutoMapper;
 using beneficiarios_dif_api.DTOs;
 using beneficiarios_dif_api.Entities;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.IO;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace beneficiarios_dif_api.Controllers
 {
+    [Authorize]
     [Route("api/visitas")]
     [ApiController]
     public class VisitasController : ControllerBase
@@ -172,72 +169,7 @@ namespace beneficiarios_dif_api.Controllers
             context.Visitas.Remove(visita);
             await context.SaveChangesAsync();
             return NoContent();
-        }
-
-        [HttpGet("obtener-nube-palabras")]
-        public async Task<ActionResult> WordCloud()
-        {
-            var comments = await context.Visitas.Select(v => v.Descripcion).ToListAsync();
-            var wordCount = CountWords(comments);
-
-            var generalWordCloud = new GeneralWordCloudDTO
-            {
-                WordCloudPorMunicipios = new List<MunicipioWordCloudDTO>(),
-                GeneralWordCloud = CreateModel(wordCount)
-            };
-
-            var municipios = await context.Municipios.ToListAsync();
-
-            foreach (var municipio in municipios)
-            {
-                var visitasPorMunicipio = await context.Visitas
-                 .Include(v => v.Beneficiario)
-                    .ThenInclude(b => b.Municipio)
-                 .Where(v => v.Beneficiario.Municipio.Id == municipio.Id)
-                 .ToListAsync();
-
-                var commentsByMunicipio = visitasPorMunicipio.Select(v => v.Descripcion).ToList();
-                var wordCountByMunicipio = CountWords(commentsByMunicipio);
-                var municipioWordCloud = new MunicipioWordCloudDTO
-                {
-                    Id = municipio.Id,
-                    Nombre = municipio.Nombre,
-                    WordCloud = CreateModel(wordCountByMunicipio)
-                };
-                generalWordCloud.WordCloudPorMunicipios.Add(municipioWordCloud);
-            }
-
-            return Ok(generalWordCloud);
-        }
-
-        static Dictionary<string, int> CountWords(List<string> comments)
-        {
-            var words = comments.SelectMany(c => Regex.Matches(c.ToLower(), @"\b\w+\b").Select(match => match.Value)).ToList();
-
-            var wordCount = new Dictionary<string, int>();
-
-            foreach (var word in words)
-            {
-                if (wordCount.ContainsKey(word))
-                {
-                    wordCount[word]++;
-                }
-                else
-                {
-                    wordCount[word] = 1;
-                }
-            }
-
-            return wordCount;
-        }
-
-        static List<WordCloudDTO> CreateModel(Dictionary<string, int> wordCount)
-        {
-            return wordCount
-                .Select(pair => new WordCloudDTO { Name = pair.Key, Weight = pair.Value })
-                .OrderByDescending(modelo => modelo.Weight)
-                .ToList();
-        }
+        }       
 
     }
 }
